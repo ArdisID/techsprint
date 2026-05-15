@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+
+  --color-primary-50: #eef2ff;
+  --color-primary-100: #e0e7ff;
+  --color-primary-500: #6366f1;
+  --color-primary-600: #4f46e5;
+
+  --color-secondary-500: #14b8a6;
+  --color-secondary-600: #0d9488;
+
+  --color-accent-500: #f59e0b;
+
+  --color-surface: #ffffff;
+  --color-background: #f8fafc;
+
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #64748b;
+
+  --color-success: #22c55e;
+  --color-error: #ef4444;
+
+  --animate-wiggle: wiggle 1s ease-in-out infinite;
+
+  @keyframes shimmer {
+    0% { transform: translateX(-150%) skewX(-12deg); }
+    100% { transform: translateX(250%) skewX(-12deg); }
+  }
+
+  @keyframes wiggle {
+    0%, 100% { transform: rotate(-10deg); }
+    50% { transform: rotate(10deg); }
+  }
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Setting: Large Text Mode */
+  html.text-large-mode {
+    font-size: 110%; /* Increases base REM size globally */
+  }
+
+  /* Setting: Reduce Motion */
+  html.reduce-motion-mode *,
+  html.reduce-motion-mode *::before,
+  html.reduce-motion-mode *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Setting: Dark Mode (Quick Invert Method) */
+  html.dark-theme-filter {
+    filter: invert(0.9) hue-rotate(180deg);
+    background-color: #fff; /* Ensure background can be inverted cleanly */
+  }
+
+  /* Restore original colors for images, videos, canvas, and special dark elements in dark mode */
+  html.dark-theme-filter img,
+  html.dark-theme-filter video,
+  html.dark-theme-filter canvas,
+  html.dark-theme-filter .keep-dark {
+    filter: invert(1) hue-rotate(180deg);
+  }
+}
+
+/* Custom Utilities for smooth animations and transitions */
+@layer utilities {
+  .glass-premium {
+    @apply bg-white/60 backdrop-blur-xl border border-white/40 shadow-[0_8px_30px_rgb(0,0,0,0.04)];
+  }
+
+  .glass-dark-premium {
+    @apply bg-slate-900/60 backdrop-blur-xl border border-slate-700/50 shadow-[0_8px_30px_rgb(0,0,0,0.12)];
+  }
+
+  .shadow-soft {
+    box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 0 3px rgba(15, 23, 42, 0.02);
+  }
+
+  .shadow-soft-hover {
+    box-shadow: 0 12px 30px -4px rgba(15, 23, 42, 0.08), 0 0 4px rgba(15, 23, 42, 0.03);
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-500 to-secondary-500;
+  }
+  
+  .focus-ring {
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50 focus-visible:ring-offset-2 transition-shadow duration-200;
+  }
+}
