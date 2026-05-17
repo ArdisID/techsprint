@@ -6,6 +6,9 @@ import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
+import DashboardPengajar from './pages/DashboardPengajar'
+import MateriPengajar from './pages/MateriPengajar'
+import StatistikPengajar from './pages/StatistikPengajar'
 import LearningDetail from './pages/LearningDetail'
 import GestureDetection from './pages/GestureDetection'
 import Progress from './pages/Progress'
@@ -37,6 +40,9 @@ function App() {
         
         {/* Protected Routes */}
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/pengajar" element={<ProtectedRoute><DashboardPengajar /></ProtectedRoute>} />
+        <Route path="/pengajar/materi" element={<ProtectedRoute><MateriPengajar /></ProtectedRoute>} />
+        <Route path="/pengajar/statistik" element={<ProtectedRoute><StatistikPengajar /></ProtectedRoute>} />
         <Route path="/learn" element={<ProtectedRoute><LearnCatalog /></ProtectedRoute>} />
         <Route path="/learn/:id" element={<ProtectedRoute><LearningDetail /></ProtectedRoute>} />
         <Route path="/gesture" element={<ProtectedRoute><GestureDetection /></ProtectedRoute>} />

@@ -80,50 +80,72 @@ const ALL_SIGNS = MODULES.flatMap(m => m.signs)
 
 // ─── Gesture Evaluator ────────────────────────────────────────────────────────
 function evaluateBisindoGesture(landmarks, activeSignIds) {
-  const isFingerStraight = (tip, pip) => landmarks[tip].y < landmarks[pip].y
-  const index  = isFingerStraight(8,  6)
-  const middle = isFingerStraight(12, 10)
-  const ring   = isFingerStraight(16, 14)
-  const pinky  = isFingerStraight(20, 18)
-  const thumbExtended = Math.abs(landmarks[4].x - landmarks[9].x) > 0.1
+  const L = landmarks
+  // Finger extended: tip y < pip y (higher on screen)
+  const index  = L[8].y  < L[6].y
+  const middle = L[12].y < L[10].y
+  const ring   = L[16].y < L[14].y
+  const pinky  = L[20].y < L[18].y
+  // Thumb: use x-axis distance from palm
+  const thumbExtended = Math.abs(L[4].x - L[9].x) > 0.09
   const count = [index, middle, ring, pinky].filter(Boolean).length
 
+  // Fist check — all 4 curled, thumb tucked
+  const isFist = count === 0 && !thumbExtended
+  // Open palm — all 4 + thumb
+  const isOpenPalm = count === 4 && thumbExtended
+
   const candidates = [
-    { id: 'halo',        match: count === 4 && thumbExtended,                               conf: 94 },
-    { id: 'iloveyou',    match: !middle && !ring && index && pinky && thumbExtended,         conf: 91 },
-    { id: 'baik',        match: count === 0 && thumbExtended,                               conf: 92 },
-    { id: 'tidak',       match: count === 1 && index && !thumbExtended,                     conf: 88 },
-    { id: 'ya',          match: count === 0 && !thumbExtended,                              conf: 87 },
-    { id: 'tolong',      match: count === 2 && index && middle && !ring && !pinky && !thumbExtended, conf: 85 },
-    { id: 'maaf',        match: count === 3 && index && middle && ring && !thumbExtended,   conf: 83 },
-    { id: 'terimakasih', match: count === 4 && !thumbExtended,                              conf: 86 },
-    // Numbers
-    { id: 'satu',        match: count === 1 && index && !thumbExtended,                     conf: 90 },
-    { id: 'dua',         match: count === 2 && index && middle && !ring && !pinky && !thumbExtended, conf: 90 },
-    { id: 'tiga',        match: count === 3 && index && middle && ring && !pinky && !thumbExtended, conf: 89 },
-    { id: 'empat',       match: count === 4 && !thumbExtended,                              conf: 88 },
-    { id: 'lima',        match: count === 4 && thumbExtended,                               conf: 92 },
-    { id: 'enam',        match: count === 0 && thumbExtended && pinky,                      conf: 85 },
-    { id: 'tujuh',       match: index && !middle && !ring && pinky && thumbExtended,        conf: 84 },
-    { id: 'delapan',     match: index && middle && !ring && pinky && thumbExtended,         conf: 83 },
-    { id: 'sembilan',    match: index && middle && ring && !pinky && thumbExtended,         conf: 82 },
-    { id: 'sepuluh',     match: count === 1 && pinky && !index && !thumbExtended,           conf: 85 },
-    // Emotions/others – mapped to hand shapes
-    { id: 'senang',      match: count === 4 && thumbExtended,                               conf: 80 },
-    { id: 'sedih',       match: count === 1 && index && thumbExtended,                      conf: 80 },
-    { id: 'apa',         match: count === 4 && thumbExtended,                               conf: 80 },
-    { id: 'siapa',       match: count === 1 && index && !thumbExtended,                     conf: 80 },
-    { id: 'dimana',      match: count === 1 && index && !thumbExtended,                     conf: 80 },
-    { id: 'kapan',       match: count === 0 && thumbExtended,                               conf: 80 },
+    // ── Sapaaan Dasar ──
+    { id: 'halo',        match: isOpenPalm,                                                                  conf: 94 },
+    { id: 'terimakasih', match: count === 4 && !thumbExtended,                                               conf: 86 },
+    { id: 'maaf',        match: isFist,                                                                      conf: 88 }, // kepalan di dada
+    { id: 'tolong',      match: count === 0 && thumbExtended,                                                conf: 87 }, // thumbs up
+    { id: 'ya',          match: count === 1 && index && !middle && !ring && !pinky && thumbExtended,          conf: 86 }, // telunjuk + jempol
+    // ── Numbers ──
+    { id: 'satu',        match: count === 1 && index && !middle && !ring && !pinky && !thumbExtended,        conf: 90 },
+    { id: 'dua',         match: count === 2 && index && middle && !ring && !pinky && !thumbExtended,         conf: 90 },
+    { id: 'tiga',        match: count === 3 && index && middle && ring && !pinky && !thumbExtended,          conf: 89 },
+    { id: 'empat',       match: count === 4 && !thumbExtended,                                               conf: 88 },
+    { id: 'lima',        match: isOpenPalm,                                                                  conf: 92 },
+    { id: 'enam',        match: !index && !middle && !ring && pinky && thumbExtended,                        conf: 85 },
+    { id: 'tujuh',       match: index && !middle && !ring && pinky && thumbExtended,                         conf: 84 },
+    { id: 'delapan',     match: index && middle && !ring && pinky && thumbExtended,                          conf: 83 },
+    { id: 'sembilan',    match: index && middle && ring && !pinky && thumbExtended,                          conf: 82 },
+    { id: 'sepuluh',     match: count === 1 && pinky && !index && !middle && !ring && !thumbExtended,        conf: 85 },
+    // ── Keluarga ──
+    { id: 'ayah',        match: count === 0 && thumbExtended,                                                conf: 84 },
+    { id: 'ibu',         match: count === 1 && pinky && !index && !thumbExtended,                            conf: 83 },
+    { id: 'kakak',       match: count === 1 && index && !thumbExtended,                                      conf: 83 },
+    { id: 'adik',        match: count === 1 && index && !thumbExtended,                                      conf: 81 },
+    { id: 'teman',       match: isFist,                                                                      conf: 80 },
+    // ── Waktu ──
+    { id: 'pagi',        match: isOpenPalm,                                                                  conf: 80 },
+    { id: 'siang',       match: count === 4 && !thumbExtended,                                               conf: 80 },
+    { id: 'malam',       match: count === 2 && index && middle && !thumbExtended,                            conf: 80 },
+    { id: 'hari',        match: count === 0 && thumbExtended,                                                conf: 80 },
+    { id: 'minggu',      match: isOpenPalm,                                                                  conf: 80 },
+    // ── Emosi ──
+    { id: 'senang',      match: isOpenPalm,                                                                  conf: 80 },
+    { id: 'sedih',       match: count === 1 && index && thumbExtended,                                       conf: 80 },
+    { id: 'marah',       match: isFist,                                                                      conf: 80 },
+    { id: 'takut',       match: isOpenPalm,                                                                  conf: 80 },
+    { id: 'iloveyou',    match: !middle && !ring && index && pinky && thumbExtended,                         conf: 91 },
+    // ── Tanya ──
+    { id: 'apa',         match: isOpenPalm,                                                                  conf: 80 },
+    { id: 'siapa',       match: count === 1 && index && !thumbExtended,                                      conf: 80 },
+    { id: 'dimana',      match: count === 1 && index && !thumbExtended,                                      conf: 80 },
+    { id: 'kapan',       match: count === 0 && thumbExtended,                                                conf: 80 },
+    { id: 'tidak',       match: count === 1 && index && !thumbExtended,                                      conf: 82 },
   ]
 
-  // Only check signs relevant to active module
+  // Only check signs in active module — first match wins (highest priority first)
   for (const c of candidates) {
     if (activeSignIds.includes(c.id) && c.match) {
-      return { id: c.id, confidence: c.conf + Math.floor(Math.random() * 5) }
+      return { id: c.id, confidence: c.conf + Math.floor(Math.random() * 4) }
     }
   }
-  return { id: null, confidence: Math.floor(Math.random() * 20 + 20) }
+  return { id: null, confidence: Math.floor(Math.random() * 18 + 15) }
 }
 
 // ─── Face Expression Evaluator (FaceMesh 468 landmarks) ─────────────────────
@@ -181,6 +203,89 @@ function evaluateFaceExpression(faceLandmarks) {
   return { id: null, confidence: 30 }
 }
 
+// ─── Hand Guide Component ─────────────────────────────────────────────────────
+const HAND_GUIDES = {
+  // format: { fingers: [thumb, index, middle, ring, pinky], steps: [] }
+  halo:        { label: '🖐 Semua jari lurus', fingers: [1,1,1,1,1], steps: ['Buka semua jari', 'Telapak menghadap depan', 'Lambaikan pelan ke kanan-kiri'] },
+  terimakasih: { label: '🤚 Empat jari lurus', fingers: [0,1,1,1,1], steps: ['Jempol dirapatkan ke telapak', 'Empat jari lurus ke atas', 'Julurkan dari dagu ke depan'] },
+  maaf:        { label: '✊ Kepalan tangan',   fingers: [0,0,0,0,0], steps: ['Kepalkan semua jari', 'Jempol di dalam atau luar', 'Taruh kepalan di dada, condong sedikit'] },
+  tolong:      { label: '👍 Jempol ke atas',  fingers: [1,0,0,0,0], steps: ['Kepalkan 4 jari', 'Jempol lurus ke atas', 'Posisi tegas dan stabil'] },
+  ya:          { label: '☝️+👍 Telunjuk + Jempol', fingers: [1,1,0,0,0], steps: ['Angkat telunjuk lurus ke atas', 'Buka jempol ke samping', '3 jari lainnya mengepal', 'Tahan 1-2 detik'] },
+  tidak:       { label: '☝️ Telunjuk gerak samping', fingers: [0,1,0,0,0], steps: ['Telunjuk lurus ke atas', 'Jari lain mengepal', 'Ayun ke kiri-kanan'] },
+  iloveyou:    { label: '🤟 Jempol+telunjuk+kelingking', fingers: [1,1,0,0,1], steps: ['Jempol, telunjuk, kelingking lurus', 'Jari tengah & manis mengepal', 'Pertahankan 2 detik'] },
+  satu:        { label: '☝️ Satu jari',       fingers: [0,1,0,0,0], steps: ['Hanya telunjuk lurus ke atas', 'Jari lain dirapatkan ke telapak'] },
+  dua:         { label: '✌️ Dua jari',        fingers: [0,1,1,0,0], steps: ['Telunjuk + jari tengah lurus', 'Jari lain mengepal'] },
+  tiga:        { label: '🤟 Tiga jari',       fingers: [0,1,1,1,0], steps: ['Telunjuk, tengah, manis lurus', 'Kelingking & jempol mengepal'] },
+  empat:       { label: '🖖 Empat jari',      fingers: [0,1,1,1,1], steps: ['Empat jari lurus ke atas', 'Jempol rapat ke telapak'] },
+  lima:        { label: '🖐 Lima jari',       fingers: [1,1,1,1,1], steps: ['Semua jari terbuka', 'Telapak menghadap ke luar'] },
+  enam:        { label: '🤙 Jempol+kelingking', fingers: [1,0,0,0,1], steps: ['Jempol & kelingking lurus', 'Tiga jari tengah mengepal'] },
+  tujuh:       { label: 'Jempol+telunjuk+kelingking', fingers: [1,1,0,0,1], steps: ['Jempol, telunjuk, kelingking lurus', 'Jari tengah & manis mengepal'] },
+  delapan:     { label: 'Jempol+tlnjk+tgh+klingking', fingers: [1,1,1,0,1], steps: ['Jempol, telunjuk, tengah, kelingking lurus', 'Jari manis mengepal'] },
+  sembilan:    { label: '4 jari + jempol, kelingking mengepal', fingers: [1,1,1,1,0], steps: ['Semua kecuali kelingking lurus', 'Kelingking dirapatkan'] },
+  sepuluh:     { label: 'Kelingking saja',    fingers: [0,0,0,0,1], steps: ['Hanya kelingking lurus ke atas', 'Semua jari lain mengepal'] },
+  senang:      { label: '🖐 Tangan terbuka pipi', fingers: [1,1,1,1,1], steps: ['Telapak terbuka melingkar di pipi', 'Senyum saat melakukan'] },
+  sedih:       { label: '👆+👍 Jari telusuri pipi', fingers: [1,1,0,0,0], steps: ['Telunjuk dan jempol terbuka', 'Telusuri pipi ke bawah pelan'] },
+  marah:       { label: '✊ Kepalan tegas',   fingers: [0,0,0,0,0], steps: ['Kepalan penuh dan tegas', 'Angkat setinggi dada', 'Ekspresi wajah tegas'] },
+  takut:       { label: '🖐 Lindungi wajah',  fingers: [1,1,1,1,1], steps: ['Kedua tangan terbuka', 'Lindungi/tutupi wajah', 'Ekspresi mata melebar'] },
+  ayah:        { label: '👍 Jempol di kepala', fingers: [1,0,0,0,0], steps: ['Jempol ke atas di sisi kepala kanan', 'Jari lain mengepal'] },
+  ibu:         { label: '🤙 Kelingking di kepala', fingers: [0,0,0,0,1], steps: ['Kelingking lurus di sisi kepala kanan', 'Jari lain mengepal'] },
+  kakak:       { label: '☝️ Telunjuk depan atas', fingers: [0,1,0,0,0], steps: ['Telunjuk lurus mengarah ke atas-depan'] },
+  adik:        { label: '☝️ Telunjuk ke bawah', fingers: [0,1,0,0,0], steps: ['Telunjuk mengarah ke bawah-depan'] },
+  teman:       { label: '✊ Dua kepalan', fingers: [0,0,0,0,0], steps: ['Dua tangan menggenggam jempol masing-masing'] },
+  pagi:        { label: '🖐 Tangan naik', fingers: [1,1,1,1,1], steps: ['Tangan dari bawah ke atas', 'Seperti matahari terbit'] },
+  siang:       { label: '🤚 Telapak atas kepala', fingers: [0,1,1,1,1], steps: ['Telapak menghadap ke bawah', 'Posisi di atas kepala'] },
+  malam:       { label: '✌️ Dua jari silang', fingers: [0,1,1,0,0], steps: ['Dua tangan disilang di dada'] },
+  hari:        { label: '👌 Lingkaran kecil', fingers: [1,1,0,0,0], steps: ['Jempol + telunjuk membentuk lingkaran O'] },
+  minggu:      { label: '🖐 Telapak berputar', fingers: [1,1,1,1,1], steps: ['Tangan terbuka', 'Putar searah jarum jam'] },
+  apa:         { label: '🖐 Dua telapak ke atas', fingers: [1,1,1,1,1], steps: ['Kedua tangan terbuka', 'Telapak menghadap ke atas'] },
+  siapa:       { label: '☝️ Tunjuk orang', fingers: [0,1,0,0,0], steps: ['Telunjuk menunjuk ke arah orang lain'] },
+  dimana:      { label: '☝️ Tunjuk berputar', fingers: [0,1,0,0,0], steps: ['Telunjuk menunjuk ke bawah', 'Putar kecil-kecil'] },
+  kapan:       { label: '👌 Lingkaran pergelangan', fingers: [1,1,0,0,0], steps: ['Jempol + telunjuk lingkaran', 'Di sekitar pergelangan tangan'] },
+}
+
+function HandSVG({ fingers }) {
+  // fingers: [thumb, index, middle, ring, pinky] — 1=extended, 0=curled
+  const [thumb, idx, mid, ring, pinky] = fingers
+  const active = '#58cc02'; const idle = '#334155'
+  return (
+    <svg viewBox="0 0 80 100" className="w-16 h-20 mx-auto" fill="none">
+      {/* Palm */}
+      <rect x="18" y="55" width="44" height="32" rx="8" fill="#1e293b" stroke="#334155" strokeWidth="1.5" />
+      {/* Thumb */}
+      <rect x="8" y="50" width="13" height="22" rx="6" fill={thumb ? active : idle} />
+      {/* Index */}
+      <rect x="21" y={idx ? 18 : 38} width="11" height={idx ? 38 : 18} rx="5" fill={idx ? active : idle} />
+      {/* Middle */}
+      <rect x="34" y={mid ? 12 : 38} width="11" height={mid ? 44 : 18} rx="5" fill={mid ? active : idle} />
+      {/* Ring */}
+      <rect x="47" y={ring ? 16 : 38} width="10" height={ring ? 40 : 18} rx="5" fill={ring ? active : idle} />
+      {/* Pinky */}
+      <rect x="59" y={pinky ? 24 : 38} width="9" height={pinky ? 32 : 16} rx="5" fill={pinky ? active : idle} />
+    </svg>
+  )
+}
+
+function HandGuide({ signId }) {
+  const guide = HAND_GUIDES[signId]
+  if (!guide) return <p className="text-slate-500 text-xs">Ikuti deskripsi di atas.</p>
+  return (
+    <div className="flex items-start gap-3">
+      <HandSVG fingers={guide.fingers} />
+      <div className="flex-1">
+        <p className="text-white font-bold text-xs mb-2">{guide.label}</p>
+        <ol className="space-y-1">
+          {guide.steps.map((step, i) => (
+            <li key={i} className="flex items-start gap-1.5 text-[11px] text-slate-400">
+              <span className="font-black text-primary-500 flex-shrink-0">{i + 1}.</span>
+              {step}
+            </li>
+          ))}
+        </ol>
+      </div>
+    </div>
+  )
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function GestureDetection() {
   const { user } = useAuth()
@@ -195,11 +300,24 @@ export default function GestureDetection() {
     const m = parseInt(searchParams.get('module') || '0')
     return m >= 0 && m < MODULES.length ? m : 0
   })
-  const [currentTarget, setCurrentTarget] = useState(0)        // index in active module signs
+
+  // Restore progress from localStorage (keyed by user + module)
+  const getSavedProgress = (modIdx, userId) => {
+    if (!userId) return { ids: [], target: 0 }
+    try {
+      const ids = JSON.parse(localStorage.getItem(`completed_ids_${userId}_mod${modIdx}`) || '[]')
+      const target = parseInt(localStorage.getItem(`current_target_${userId}_mod${modIdx}`) || '0')
+      return { ids, target: Math.min(target, MODULES[modIdx].signs.length - 1) }
+    } catch { return { ids: [], target: 0 } }
+  }
+
+  const [currentTarget, setCurrentTarget] = useState(0)
   const [points,        setPoints]        = useState(0)
-  const [completedIds,  setCompletedIds]  = useState([])       // completed sign IDs across all modules
+  const [completedIds,  setCompletedIds]  = useState([])
   const [showSuccess,   setShowSuccess]   = useState(false)
   const [successSign,   setSuccessSign]   = useState(null)
+  const [showModuleComplete, setShowModuleComplete] = useState(false)
+  const [moduleXpEarned, setModuleXpEarned] = useState(0)
 
   const SIGNS = MODULES[activeModule].signs
   const activeSignIds = SIGNS.map(s => s.id)
@@ -220,13 +338,17 @@ export default function GestureDetection() {
   activeSignIdsRef.current = activeSignIds
   signsRef.current = SIGNS
   currentTargetRef.current = currentTarget
-  // Load saved points for this user
+  // Load saved points + restore progress per module
   useEffect(() => {
     if (user?.id) {
       const saved = localStorage.getItem(`ai_points_${user.id}`)
       if (saved) setPoints(parseInt(saved))
+      // Restore completedIds and currentTarget for active module
+      const { ids, target } = getSavedProgress(activeModule, user.id)
+      setCompletedIds(ids)
+      setCurrentTarget(target)
     }
-  }, [user])
+  }, [user, activeModule])
 
   // ── Camera & MediaPipe init ──
   const USE_FACE_MODULE = 4  // 0-indexed index of Modul 5 (Emosi)
@@ -392,15 +514,46 @@ export default function GestureDetection() {
     setPoints(newPoints)
     if (user?.id) localStorage.setItem(`ai_points_${user.id}`, newPoints)
 
-    setCompletedIds(prev => [...new Set([...prev, sign.id])])
+    // Compute new completedIds synchronously
+    const newCompleted = [...new Set([...completedIds, sign.id])]
+    setCompletedIds(newCompleted)
+    // Persist per-module progress immediately
+    if (user?.id) {
+      localStorage.setItem(`completed_ids_${user.id}_mod${activeModule}`, JSON.stringify(newCompleted))
+    }
     setSuccessSign(sign)
     setShowSuccess(true)
 
-    setTimeout(() => {
-      setShowSuccess(false)
-      // Move to next sign
-      setCurrentTarget(prev => (prev + 1) % SIGNS.length)
-    }, 2500)
+    // Check module completion OUTSIDE setState to avoid React Strict double-invoke
+    const moduleSignIds = signsRef.current.map(s => s.id)
+    const allDone = moduleSignIds.every(id => newCompleted.includes(id))
+
+    if (allDone) {
+      const earned = signsRef.current.reduce((sum, s) => sum + s.xp, 0)
+      setModuleXpEarned(earned)
+      if (user?.id) {
+        const key = `completed_modules_${user.id}`
+        const done = JSON.parse(localStorage.getItem(key) || '[]')
+        if (!done.includes(activeModule)) {
+          localStorage.setItem(key, JSON.stringify([...done, activeModule]))
+        }
+      }
+      setTimeout(() => {
+        setShowSuccess(false)
+        setShowModuleComplete(true)
+        stopCameraRaw()
+      }, 2000)
+    } else {
+      // Advance exactly one step and persist target
+      const nextIdx = currentTargetRef.current + 1
+      if (user?.id) {
+        localStorage.setItem(`current_target_${user.id}_mod${activeModule}`, nextIdx)
+      }
+      setTimeout(() => {
+        setShowSuccess(false)
+        setCurrentTarget(nextIdx)
+      }, 2000)
+    }
   }
 
   const target = SIGNS[Math.min(currentTarget, SIGNS.length - 1)]
@@ -420,6 +573,57 @@ export default function GestureDetection() {
 
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col font-sans selection:bg-primary-500 selection:text-white">
+
+      {/* ── Module Complete Overlay ── */}
+      <AnimatePresence>
+        {showModuleComplete && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-6"
+          >
+            <motion.div
+              initial={{ scale: 0.8, y: 40 }} animate={{ scale: 1, y: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+              className="bg-slate-900 border border-white/10 rounded-[2.5rem] p-10 max-w-md w-full text-center shadow-[0_0_80px_rgba(88,204,2,0.15)]"
+            >
+              <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2, type: 'spring' }}
+                className="text-7xl mb-4">🏆</motion.div>
+              <h2 className="text-3xl font-black text-white mb-2">Modul Selesai!</h2>
+              <p className="text-slate-400 mb-1 font-medium">{MODULES[activeModule].emoji} {MODULES[activeModule].label}</p>
+              <p className="text-slate-500 text-sm mb-6">Semua isyarat berhasil kamu kuasai 🎉</p>
+
+              <div className="flex items-center justify-center gap-3 mb-8">
+                <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 px-5 py-3 rounded-full">
+                  <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
+                  <span className="text-amber-300 font-black text-xl">+{moduleXpEarned} XP</span>
+                </div>
+                <div className="flex items-center gap-2 bg-green-500/10 border border-green-500/30 px-5 py-3 rounded-full">
+                  <CheckCircle2 className="w-5 h-5 text-green-400" />
+                  <span className="text-green-300 font-bold">{SIGNS.length} Isyarat</span>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                {activeModule < MODULES.length - 1 && (
+                  <button
+                    onClick={() => { setShowModuleComplete(false); switchModule(activeModule + 1) }}
+                    className="w-full py-3.5 bg-primary-500 hover:bg-primary-600 text-white font-black rounded-2xl transition-all shadow-[0_4px_20px_rgba(88,204,2,0.3)] flex items-center justify-center gap-2"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                    Modul Berikutnya: {MODULES[activeModule + 1].emoji} {MODULES[activeModule + 1].label}
+                  </button>
+                )}
+                <button
+                  onClick={handleExit}
+                  className="w-full py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-2xl transition-all border border-white/5"
+                >
+                  Kembali ke Dashboard
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── Navbar ── */}
       <header className="h-20 border-b border-white/10 bg-slate-900/50 backdrop-blur-md flex items-center justify-between px-6 z-50 shrink-0">
@@ -656,17 +860,24 @@ export default function GestureDetection() {
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-primary-500/10 text-primary-400 text-xs font-bold uppercase tracking-widest mb-3">
               <Target className="w-3.5 h-3.5" /> Target Sekarang
             </div>
-            <div className="bg-slate-800/60 rounded-2xl p-4 border border-white/5 flex items-center gap-4">
-              <div className="text-4xl">{target.emoji}</div>
-              <div>
-                <h3 className="text-white font-black text-xl mb-0.5">{target.label}</h3>
-                <p className="text-slate-400 text-xs font-medium leading-relaxed">{target.description}</p>
-                <div className="flex items-center gap-1.5 mt-2">
-                  <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
-                  <span className="text-amber-400 font-bold text-xs">+{target.xp} XP jika berhasil</span>
-                </div>
+            {/* Hand Guide */}
+          <div className="bg-slate-800/60 rounded-2xl p-4 border border-white/5 flex items-center gap-4">
+            <div className="text-4xl">{target.emoji}</div>
+            <div className="flex-1">
+              <h3 className="text-white font-black text-xl mb-0.5">{target.label}</h3>
+              <p className="text-slate-400 text-xs font-medium leading-relaxed">{target.description}</p>
+              <div className="flex items-center gap-1.5 mt-2">
+                <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+                <span className="text-amber-400 font-bold text-xs">+{target.xp} XP jika berhasil</span>
               </div>
             </div>
+          </div>
+
+          {/* Visual hand instruction */}
+          <div className="mt-3 bg-slate-900/80 border border-white/5 rounded-xl p-3">
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">📸 Bentuk Tangan</p>
+            <HandGuide signId={target.id} />
+          </div>
           </div>
 
           {/* Scoreboard */}

@@ -23,8 +23,13 @@ export default function Login() {
     setIsLoading(true)
     
     try {
-      await login(email, password)
-      navigate(from, { replace: true })
+      const userData = await login(email, password)
+      // Redirect tegas berdasarkan role — jangan pakai 'from' karena bisa salah
+      if (userData?.role === 'pengajar') {
+        navigate('/pengajar', { replace: true })
+      } else {
+        navigate('/dashboard', { replace: true })
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Terjadi kesalahan. Silakan coba lagi.')
     } finally {

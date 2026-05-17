@@ -18,6 +18,10 @@ export default function Dashboard() {
   const [showWelcome, setShowWelcome] = React.useState(false)
 
   React.useEffect(() => {
+    if (user?.role === 'pengajar') {
+      navigate('/pengajar', { replace: true })
+      return
+    }
     if (user?.id) {
       const savedProgress = localStorage.getItem(`progress_${user.id}`)
       const savedStreak = localStorage.getItem(`streak_${user.id}`)
