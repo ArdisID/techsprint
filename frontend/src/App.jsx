@@ -17,6 +17,8 @@ import Achievement from './pages/Achievement'
 import Settings from './pages/Settings'
 import Notifications from './pages/Notifications'
 import Pricing from './pages/Pricing'
+import DiagnosticTest from './pages/DiagnosticTest'
+import QuizBergambar from './pages/QuizBergambar'
 
 function App() {
   // Apply global settings on app boot
@@ -51,6 +53,8 @@ function App() {
         <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
         <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
         <Route path="/upgrade" element={<ProtectedRoute><Pricing /></ProtectedRoute>} />
+        <Route path="/diagnostic" element={<ProtectedRoute><DiagnosticTest /></ProtectedRoute>} />
+        <Route path="/quiz" element={<ProtectedRoute><QuizBergambar /></ProtectedRoute>} />
       </Routes>
     </AuthProvider>
   )

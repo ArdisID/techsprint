@@ -328,16 +328,18 @@ export default function GestureDetection() {
   const faceMeshRef      = useRef(null)   // FaceMesh engine (Module 5 only)
   const cameraRef        = useRef(null)
   const holdTimer        = useRef(null)
-  const activeSignIdsRef = useRef([])
-  const currentTargetRef = useRef(0)
-  const signsRef         = useRef([])
-  const isMountedRef     = useRef(true)
-  const faceResultRef    = useRef(null)   // latest face result for merge
+  const activeSignIdsRef  = useRef([])
+  const currentTargetRef  = useRef(0)
+  const completedIdsRef   = useRef([])   // ← fix stale closure di MediaPipe callback
+  const signsRef          = useRef([])
+  const isMountedRef      = useRef(true)
+  const faceResultRef     = useRef(null)
 
-  // Keep refs in sync with state so MediaPipe callbacks always see latest values
+  // Keep refs in sync — MediaPipe callbacks selalu lihat nilai terbaru
   activeSignIdsRef.current = activeSignIds
   signsRef.current = SIGNS
   currentTargetRef.current = currentTarget
+  completedIdsRef.current  = completedIds
   // Load saved points + restore progress per module
   useEffect(() => {
     if (user?.id) {
@@ -514,17 +516,17 @@ export default function GestureDetection() {
     setPoints(newPoints)
     if (user?.id) localStorage.setItem(`ai_points_${user.id}`, newPoints)
 
-    // Compute new completedIds synchronously
-    const newCompleted = [...new Set([...completedIds, sign.id])]
+    // Pakai REF bukan closure — ref selalu sinkron dengan state terbaru
+    const newCompleted = [...new Set([...completedIdsRef.current, sign.id])]
     setCompletedIds(newCompleted)
-    // Persist per-module progress immediately
+    completedIdsRef.current = newCompleted  // update ref langsung agar setTimeout di bawah juga benar
+    // Persist per-module progress segera
     if (user?.id) {
       localStorage.setItem(`completed_ids_${user.id}_mod${activeModule}`, JSON.stringify(newCompleted))
     }
     setSuccessSign(sign)
     setShowSuccess(true)
 
-    // Check module completion OUTSIDE setState to avoid React Strict double-invoke
     const moduleSignIds = signsRef.current.map(s => s.id)
     const allDone = moduleSignIds.every(id => newCompleted.includes(id))
 
@@ -544,7 +546,6 @@ export default function GestureDetection() {
         stopCameraRaw()
       }, 2000)
     } else {
-      // Advance exactly one step and persist target
       const nextIdx = currentTargetRef.current + 1
       if (user?.id) {
         localStorage.setItem(`current_target_${user.id}_mod${activeModule}`, nextIdx)

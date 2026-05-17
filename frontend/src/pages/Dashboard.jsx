@@ -62,6 +62,8 @@ export default function Dashboard() {
     { icon: <Home />, label: 'Dashboard', path: '/dashboard' },
     { icon: <Compass />, label: 'Belajar BISINDO', path: '/learn' },
     { icon: <Activity />, label: 'AI Practice', path: '/gesture' },
+    { icon: <Target />, label: 'Kuis', path: '/quiz' },
+    { icon: <Target />, label: 'Diagnostic', path: '/diagnostic' },
     { icon: <Target />, label: 'Progress', path: '/progress' },
     { icon: <Award />, label: 'Achievement', path: '/achievement' },
     { icon: <Settings />, label: 'Pengaturan', path: '/settings' },
