@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, Sparkles } from 'lucide-react'
-import Button from '../ui/Button'
+import { Icon } from '@iconify/react'
 
-export default function Navbar() {
+export default function Navbar({ transparentDark = false }) {
   const [scrolled, setScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
@@ -17,59 +16,62 @@ export default function Navbar() {
   }, [])
 
   const navLinks = [
-    { name: 'Masalah', path: '/#problem' },
-    { name: 'Demo AI', path: '/#demo' },
-    { name: 'Fitur', path: '/#features' },
+    { name: 'Tentang Kami', path: '/#problem' },
+    { name: 'Coba Main!', path: '/#demo' },
+    { name: 'Keseruan', path: '/#features' },
   ]
 
   return (
     <nav 
-      className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-        scrolled ? 'bg-white/80 backdrop-blur-xl shadow-[0_4px_30px_rgba(0,0,0,0.03)] py-3' : 'bg-transparent py-5'
+      className={`fixed top-0 w-full z-50 transition-all duration-300 px-4 sm:px-6 lg:px-8 ${
+        scrolled ? 'py-4' : 'py-6'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className={`max-w-6xl mx-auto transition-all duration-300 ${scrolled ? 'bg-white border-[4px] border-slate-200 shadow-sm rounded-[2rem] px-6 py-3' : 'bg-transparent'}`}>
         <div className="flex justify-between items-center">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group">
-            <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white shadow-lg shadow-slate-900/20 group-hover:scale-105 transition-transform duration-300">
-              <Sparkles className="w-5 h-5 text-primary-400" />
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${!scrolled && transparentDark ? 'bg-white/20' : 'bg-[#EAF6FD]'}`}>
+              <Icon icon="fluent-emoji:video-game" className="w-8 h-8" />
             </div>
-            <span className="font-extrabold text-xl tracking-tight text-slate-900">
-              BISINDO<span className="text-primary-500">.AI</span>
+            <span className={`font-black text-2xl tracking-tight ${!scrolled && transparentDark ? 'text-white' : 'text-slate-800'}`}>
+              BISINDO<span className="text-[#2D6A9F]">Seru!</span>
             </span>
           </Link>
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-8">
-            <div className="flex gap-6">
+            <div className="flex gap-8">
               {navLinks.map((link) => (
                 <a 
                   key={link.name} 
                   href={link.path.replace('/', '')}
-                  className="text-sm font-semibold text-slate-500 hover:text-slate-900 transition-colors relative group"
+                  className={`text-base font-black transition-all ${!scrolled && transparentDark ? 'text-slate-200 hover:text-white' : 'text-slate-500 hover:text-[#2D6A9F] hover:-translate-y-1 inline-block'}`}
                 >
                   {link.name}
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-slate-900 transition-all duration-300 ease-out group-hover:w-full rounded-full"></span>
                 </a>
               ))}
             </div>
-            <div className="flex items-center gap-4 border-l border-slate-200 pl-8">
-              <Link to="/login" className="text-sm font-bold text-slate-600 hover:text-primary-600 transition-colors">
-                Masuk
+            <div className="flex items-center gap-4">
+              <Link to="/login">
+                <button className={`px-6 py-3 font-black rounded-2xl transition-all ${!scrolled && transparentDark ? 'text-white hover:bg-white/10' : 'text-slate-500 hover:text-purple-500 hover:bg-slate-100'}`}>
+                  Masuk
+                </button>
               </Link>
               <Link to="/register">
-                <Button size="sm" className="shadow-[0_4px_15px_rgba(99,102,241,0.2)]">Mulai Belajar</Button>
+                <button className={!scrolled && transparentDark ? "bg-yellow-400 hover:bg-yellow-500 text-yellow-950 border-b-4 border-yellow-600 font-black rounded-2xl active:translate-y-1 active:border-b-0 transition-all px-6 py-3" : "bg-[#2D6A9F] hover:bg-[#3A7AB5] text-white font-black rounded-2xl border-b-[4px] border-[#1A4E7A] active:border-b-0 active:translate-y-[4px] transition-all px-6 py-3"}>
+                  Mulai Main!
+                </button>
               </Link>
             </div>
           </div>
 
           {/* Mobile Menu Button */}
           <button 
-            className="md:hidden text-slate-600 p-2"
+            className={`md:hidden p-2 active:scale-95 transition-transform ${!scrolled && transparentDark ? 'text-white' : 'text-slate-600'}`}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
-            {mobileMenuOpen ? <X /> : <Menu />}
+            {mobileMenuOpen ? <Icon icon="solar:close-square-bold-duotone" className="w-10 h-10 text-red-500" /> : <Icon icon="solar:hamburger-menu-bold-duotone" className="w-10 h-10 text-[#2D6A9F]" />}
           </button>
         </div>
       </div>
@@ -97,10 +99,10 @@ export default function Navbar() {
               <div className="h-px bg-slate-100 my-2" />
               <div className="flex flex-col gap-3 p-2">
                 <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="outline" className="w-full">Masuk ke Akun</Button>
+                  <button className="w-full bg-slate-100 text-slate-700 font-black py-4 rounded-2xl">Masuk ke Akun</button>
                 </Link>
                 <Link to="/register" onClick={() => setMobileMenuOpen(false)}>
-                  <Button className="w-full">Mulai Belajar Gratis</Button>
+                  <button className="w-full bg-green-500 text-white border-b-4 border-green-700 active:border-b-0 active:translate-y-1 font-black py-4 rounded-2xl">Mulai Main Gratis</button>
                 </Link>
               </div>
             </div>

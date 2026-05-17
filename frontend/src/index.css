@@ -1,37 +1,45 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap');
+
 @import "tailwindcss";
 
 @theme {
-  --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-sans: 'Nunito', ui-sans-serif, system-ui, sans-serif;
 
-  --color-primary-50: #eef2ff;
-  --color-primary-100: #e0e7ff;
-  --color-primary-500: #6366f1;
-  --color-primary-600: #4f46e5;
+  /* Duolingo-style Gamified Palette */
+  --color-primary-50: #f4fdf4;
+  --color-primary-100: #e0f8e0;
+  --color-primary-500: #58cc02; /* Duolingo Green */
+  --color-primary-600: #46a302; 
 
-  --color-secondary-500: #14b8a6;
-  --color-secondary-600: #0d9488;
+  --color-secondary-500: #1cb0f6; /* Duolingo Sky Blue */
+  --color-secondary-600: #1899d6;
 
-  --color-accent-500: #f59e0b;
+  --color-accent-500: #ffc800; /* Duolingo Yellow */
 
   --color-surface: #ffffff;
-  --color-background: #f8fafc;
+  --color-background: #ffffff; /* Clean white */
 
-  --color-text-primary: #0f172a;
-  --color-text-secondary: #64748b;
+  --color-text-primary: #3c3c3c; /* Softer black */
+  --color-text-secondary: #afafaf; 
 
-  --color-success: #22c55e;
-  --color-error: #ef4444;
+  --color-success: #58cc02;
+  --color-error: #ff4b4b; /* Duolingo Red */
 
-  --animate-wiggle: wiggle 1s ease-in-out infinite;
-
-  @keyframes shimmer {
-    0% { transform: translateX(-150%) skewX(-12deg); }
-    100% { transform: translateX(250%) skewX(-12deg); }
+  @keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-16px); }
+    100% { transform: translateY(0px); }
   }
 
   @keyframes wiggle {
-    0%, 100% { transform: rotate(-10deg); }
-    50% { transform: rotate(10deg); }
+    0%, 100% { transform: rotate(-8deg); }
+    50% { transform: rotate(8deg); }
+  }
+
+  @keyframes bounceIn {
+    0% { transform: scale(0.8); opacity: 0; }
+    70% { transform: scale(1.05); opacity: 1; }
+    100% { transform: scale(1); }
   }
 }
 
@@ -40,18 +48,14 @@
     scroll-behavior: smooth;
   }
   body {
+    font-family: 'Nunito', sans-serif;
     background-color: var(--color-background);
     color: var(--color-text-primary);
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Setting: Large Text Mode */
-  html.text-large-mode {
-    font-size: 110%; /* Increases base REM size globally */
-  }
+  html.text-large-mode { font-size: 110%; }
 
-  /* Setting: Reduce Motion */
   html.reduce-motion-mode *,
   html.reduce-motion-mode *::before,
   html.reduce-motion-mode *::after {
@@ -61,13 +65,11 @@
     scroll-behavior: auto !important;
   }
 
-  /* Setting: Dark Mode (Quick Invert Method) */
   html.dark-theme-filter {
     filter: invert(0.9) hue-rotate(180deg);
-    background-color: #fff; /* Ensure background can be inverted cleanly */
+    background-color: #fff;
   }
 
-  /* Restore original colors for images, videos, canvas, and special dark elements in dark mode */
   html.dark-theme-filter img,
   html.dark-theme-filter video,
   html.dark-theme-filter canvas,
@@ -76,29 +78,64 @@
   }
 }
 
-/* Custom Utilities for smooth animations and transitions */
 @layer utilities {
+  /* Fun background: colored diagonal stripes - very "game-like" */
+  .bg-pattern-dots {
+    background-color: #fffbf5;
+    background-image: radial-gradient(rgba(251, 191, 36, 0.2) 2px, transparent 2px);
+    background-size: 28px 28px;
+  }
+
+  .bg-grid-tech {
+    background-color: #fafaf9; /* stone-50 */
+    background-image: 
+      linear-gradient(to right, rgba(167, 139, 250, 0.1) 2px, transparent 2px),
+      linear-gradient(to bottom, rgba(167, 139, 250, 0.1) 2px, transparent 2px);
+    background-size: 32px 32px;
+  }
+
   .glass-premium {
-    @apply bg-white/60 backdrop-blur-xl border border-white/40 shadow-[0_8px_30px_rgb(0,0,0,0.04)];
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(20px);
+    border: 2px solid rgba(255,255,255,0.8);
   }
 
   .glass-dark-premium {
-    @apply bg-slate-900/60 backdrop-blur-xl border border-slate-700/50 shadow-[0_8px_30px_rgb(0,0,0,0.12)];
+    background: rgba(15,23,42,0.7);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.08);
   }
 
-  .shadow-soft {
-    box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 0 3px rgba(15, 23, 42, 0.02);
+  /* Chunky Duolingo-style button helper */
+  .btn-chunky {
+    border-bottom-width: 6px;
+    border-radius: 1rem;
+    font-weight: 900;
+    transition: all 0.1s;
+  }
+  .btn-chunky:active {
+    border-bottom-width: 2px;
+    transform: translateY(4px);
   }
 
-  .shadow-soft-hover {
-    box-shadow: 0 12px 30px -4px rgba(15, 23, 42, 0.08), 0 0 4px rgba(15, 23, 42, 0.03);
+  .animate-float {
+    animation: float 5s ease-in-out infinite;
+  }
+
+  .animate-float-delayed {
+    animation: float 5s ease-in-out infinite;
+    animation-delay: -2.5s;
+  }
+
+  .animate-wiggle {
+    animation: wiggle 1s ease-in-out infinite;
   }
 
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-500 to-secondary-500;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-violet-400 to-rose-400;
   }
-  
+
   .focus-ring {
-    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50 focus-visible:ring-offset-2 transition-shadow duration-200;
+    @apply focus:outline-none focus-visible:ring-4 focus-visible:ring-violet-300/50 focus-visible:ring-offset-2 transition-shadow duration-200;
   }
 }

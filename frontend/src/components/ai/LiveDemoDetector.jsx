@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ScanFace, AlertCircle, VideoOff, Activity, Video } from 'lucide-react'
+import { Icon } from '@iconify/react'
 import Button from '../ui/Button'
 
 export default function LiveDemoDetector() {
@@ -98,9 +98,10 @@ export default function LiveDemoDetector() {
       // NOTE: We DO NOT clear the canvas or redraw results.image here.
       // The `onFrame` loop already draws the mirrored video stream continuously.
       // We just draw the landmarks directly on top of whatever is currently on the canvas.
+      // Draw playful, thick landmarks
       const landmarks = results.multiHandLandmarks[0]
-      window.drawConnectors(canvasCtx, landmarks, window.HAND_CONNECTIONS, { color: '#6366f1', lineWidth: 4 })
-      window.drawLandmarks(canvasCtx, landmarks, { color: '#ffffff', lineWidth: 2, fillColor: '#38bdf8', radius: () => 4 })
+      window.drawConnectors(canvasCtx, landmarks, window.HAND_CONNECTIONS, { color: '#ffffff', lineWidth: 8 })
+      window.drawLandmarks(canvasCtx, landmarks, { color: '#f59e0b', lineWidth: 4, fillColor: '#fcd34d', radius: () => 6 })
 
       const evaluation = evaluateGesture(landmarks)
       setConfidence(evaluation.confidence)
@@ -141,7 +142,7 @@ export default function LiveDemoDetector() {
   }
 
   return (
-    <div className="relative aspect-video rounded-[2rem] bg-slate-950 overflow-hidden border border-slate-800 flex items-center justify-center">
+    <div className="relative aspect-video rounded-[2rem] bg-slate-100 overflow-hidden border-[6px] border-slate-200 flex items-center justify-center">
       
       {/* MediaPipe Video & Canvas */}
       <video ref={videoRef} className="absolute inset-0 w-full h-full object-cover opacity-0 pointer-events-none" autoPlay playsInline muted></video>
@@ -150,76 +151,77 @@ export default function LiveDemoDetector() {
       {/* Overlays based on state */}
       <AnimatePresence>
         {status === 'stopped' && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/90 z-20 backdrop-blur-sm p-6 text-center">
-            <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4">
-              <ScanFace className="w-8 h-8 text-primary-400" />
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 flex flex-col items-center justify-center bg-blue-50 z-20 text-center p-6">
+            <div className="w-24 h-24 bg-white rounded-[2rem] shadow-sm flex items-center justify-center mb-6 border-4 border-blue-200">
+              <Icon icon="solar:camera-bold-duotone" className="w-14 h-14 text-blue-500" />
             </div>
-            <h3 className="text-white font-bold text-xl mb-2 tracking-tight">Coba Deteksi AI Sekarang</h3>
-            <p className="text-slate-400 text-sm max-w-sm mb-6 leading-relaxed">
-              Memerlukan izin akses kamera. Pemrosesan dilakukan 100% lokal di perangkat Anda.
+            <h3 className="text-slate-800 font-black text-3xl mb-3 tracking-tight">Yuk, Coba Main!</h3>
+            <p className="text-slate-500 font-bold max-w-sm mb-8">
+              Buka kameramu dan coba ikuti gerakan bahasa isyarat. Tenang, aman kok!
             </p>
-            <Button onClick={startCamera} className="bg-primary-500 hover:bg-primary-600 text-white shadow-[0_0_20px_rgba(99,102,241,0.4)] px-8">
-              Aktifkan Kamera & Coba Demo
-            </Button>
+            <button onClick={startCamera} className="bg-blue-500 hover:bg-blue-400 text-white font-black px-10 py-4 rounded-2xl border-b-[6px] border-blue-700 active:border-b-0 active:translate-y-[6px] transition-all text-xl">
+              Nyalakan Kamera
+            </button>
           </motion.div>
         )}
 
         {status === 'loading' && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm flex flex-col items-center justify-center z-20">
-            <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: "linear" }} className="w-12 h-12 border-4 border-slate-800 border-t-primary-500 rounded-full mb-4" />
-            <p className="text-white font-bold">Memuat AI Vision...</p>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-blue-50 flex flex-col items-center justify-center z-20">
+            <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }} className="w-16 h-16 border-8 border-blue-100 border-t-blue-500 rounded-full mb-6" />
+            <p className="text-slate-600 font-black text-xl">Tunggu bentar ya...</p>
           </motion.div>
         )}
 
         {status === 'error' && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-slate-950/90 backdrop-blur-sm flex flex-col items-center justify-center z-20 text-center p-6">
-            <AlertCircle className="w-12 h-12 text-error mb-4" />
-            <h3 className="text-white font-bold mb-2">Terjadi Kesalahan</h3>
-            <p className="text-slate-400 text-sm mb-6 max-w-xs">{errorMessage}</p>
-            <Button onClick={startCamera}>Coba Lagi</Button>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-red-50 flex flex-col items-center justify-center z-20 text-center p-6">
+            <Icon icon="solar:danger-triangle-bold-duotone" className="w-16 h-16 mb-4 text-red-500" />
+            <h3 className="text-slate-800 font-black text-2xl mb-2">Aduh, Ada Masalah</h3>
+            <p className="text-slate-600 font-bold mb-8 max-w-xs">{errorMessage}</p>
+            <button onClick={startCamera} className="bg-yellow-400 hover:bg-yellow-300 text-yellow-950 font-black px-8 py-4 rounded-2xl border-b-[6px] border-yellow-600 active:border-b-0 active:translate-y-[6px] transition-all">
+              Coba Lagi
+            </button>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Cinematic Scanning HUD */}
+      {/* Fun, Playful HUD */}
       {status === 'active' && (
         <div className="absolute inset-0 pointer-events-none z-30">
           
-          {/* Top Left HUD - Added dark background for readability against bright camera feeds */}
-          <div className="absolute top-4 left-4 md:top-6 md:left-6 bg-slate-950/60 backdrop-blur-md px-4 py-3 rounded-xl border border-white/10 flex flex-col gap-1.5 shadow-lg">
-            <span className="text-primary-400 font-mono text-[10px] md:text-xs font-bold tracking-widest uppercase">sys.ai.activate()</span>
-            <span className="text-primary-400 font-mono text-[10px] md:text-xs font-bold tracking-widest uppercase">tracking_hand_landmarks...</span>
-            <div className="flex items-center gap-2 mt-1">
-              <div className="w-2 h-2 rounded-full bg-success animate-pulse shadow-[0_0_8px_#22c55e]"></div>
-              <span className="text-success font-mono text-[10px] md:text-xs font-bold tracking-widest uppercase">Confidence: {confidence}%</span>
+          {/* Top Left Motivation */}
+          <motion.div 
+            animate={{ y: [0, -5, 0] }}
+            transition={{ duration: 3, repeat: Infinity }}
+            className="absolute top-4 left-4 md:top-6 md:left-6 bg-white px-5 py-3 rounded-2xl border-4 border-blue-200 flex flex-col gap-1 shadow-sm"
+          >
+            <div className="flex items-center gap-2">
+              <Icon icon="solar:smile-circle-bold-duotone" className="w-6 h-6 text-blue-500" />
+              <span className="text-slate-700 font-black text-sm md:text-base">Mulai Bergerak!</span>
             </div>
-          </div>
-
-          {/* Top Right - Turn Off Camera Button - Made Solid Red and Z-Index high */}
-          <div className="absolute top-4 right-4 md:top-6 md:right-6 pointer-events-auto z-50">
-            <Button onClick={stopCamera} className="bg-red-500 hover:bg-red-600 text-white border-none shadow-[0_8px_20px_rgba(239,68,68,0.4)] px-5 py-2.5 font-bold tracking-wide flex items-center rounded-xl transition-all hover:-translate-y-1">
-              <VideoOff className="w-4 h-4 mr-2" /> Matikan Kamera
-            </Button>
-          </div>
-
-          {/* Center Target Rings */}
-          <motion.div animate={{ scale: [0.95, 1.05, 0.95], opacity: [0.2, 0.5, 0.2] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200px] h-[200px] md:w-[300px] md:h-[300px] border-[1.5px] border-primary-400/30 rounded-full flex items-center justify-center">
-            <div className="w-[150px] h-[150px] md:w-[220px] md:h-[220px] border-[1.5px] border-primary-500/50 rounded-full"></div>
+            <span className="text-blue-500 font-bold text-xs">Sistem siap merekam</span>
           </motion.div>
 
-          {/* Sweeping scan wave */}
-          <motion.div animate={{ left: ['-50%', '150%'] }} transition={{ duration: 3, repeat: Infinity, ease: "linear" }} className="absolute top-0 bottom-0 w-40 bg-gradient-to-r from-transparent via-primary-500/15 to-transparent skew-x-12" />
+          {/* Top Right - Turn Off Camera Button */}
+          <div className="absolute top-4 right-4 md:top-6 md:right-6 pointer-events-auto z-50">
+            <button onClick={stopCamera} className="bg-red-500 hover:bg-red-400 text-white border-b-4 border-red-700 active:border-b-0 active:translate-y-1 px-4 py-2 font-black flex items-center gap-2 rounded-xl transition-all">
+              <Icon icon="solar:videocamera-cross-bold" className="w-6 h-6" /> <span className="hidden md:inline">Stop</span>
+            </button>
+          </div>
 
-          {/* Real-time Number Output */}
-          <div className="absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-4 md:gap-6 bg-slate-900/95 backdrop-blur-xl px-8 py-4 rounded-2xl border border-primary-500/40 shadow-[0_15px_40px_rgba(99,102,241,0.25)]">
-            <Activity className="w-6 h-6 md:w-8 md:h-8 text-primary-400 animate-pulse" />
+          {/* Real-time Number Output Bubble */}
+          <motion.div 
+            animate={{ scale: detectedSign ? [1, 1.05, 1] : 1 }}
+            transition={{ duration: 0.3 }}
+            className="absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-white px-8 py-4 rounded-3xl border-[6px] border-yellow-300 shadow-sm"
+          >
+            <Icon icon="solar:star-fall-bold-duotone" className="w-10 h-10 text-yellow-500" />
             <div className="flex flex-col">
-              <span className="text-slate-400 font-bold text-[10px] md:text-xs uppercase tracking-[0.2em] mb-0.5">Terdeteksi</span>
-              <span className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-primary-200 leading-none">
-                {detectedSign || "-"}
+              <span className="text-yellow-500 font-black text-sm mb-0.5">TERBACA:</span>
+              <span className="text-3xl md:text-5xl font-black text-slate-800 leading-none">
+                {detectedSign || "..."}
               </span>
             </div>
-          </div>
+          </motion.div>
         </div>
       )}
     </div>
