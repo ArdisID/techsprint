@@ -127,16 +127,17 @@ export default function LiveDemoDetector() {
     let score = Math.floor(Math.random() * 20 + 30)
 
     if (straightCount === 0 && !thumbExtended) { detected = "0"; score = 90 }
+    else if (straightCount === 2 && indexStraight && pinkyStraight && thumbExtended) { detected = "I Love You 🤟"; score = 99 }
+    else if (straightCount === 4 && thumbExtended) { detected = "Halo! 🖐 / 5"; score = 98 }
     else if (straightCount === 1 && indexStraight && !thumbExtended) { detected = "1"; score = 95 }
     else if (straightCount === 2 && indexStraight && middleStraight && !thumbExtended) { detected = "2"; score = 95 }
     else if (straightCount === 3 && indexStraight && middleStraight && ringStraight && !thumbExtended) { detected = "3"; score = 92 }
     else if (straightCount === 4 && !thumbExtended) { detected = "4"; score = 94 }
-    else if (straightCount === 4 && thumbExtended) { detected = "5"; score = 98 }
-    else if (straightCount === 0 && thumbExtended) { detected = "6"; score = 88 }
+    else if (straightCount === 0 && thumbExtended) { detected = "Jempol 👍 / 6"; score = 88 }
     else if (straightCount === 1 && indexStraight && thumbExtended) { detected = "7"; score = 85 }
     else if (straightCount === 2 && indexStraight && middleStraight && thumbExtended) { detected = "8"; score = 82 }
     else if (straightCount === 3 && indexStraight && middleStraight && ringStraight && thumbExtended) { detected = "9"; score = 80 }
-    else if (straightCount === 1 && pinkyStraight && !thumbExtended) { detected = "10"; score = 85 }
+    else if (straightCount === 1 && pinkyStraight && !thumbExtended) { detected = "Kelingking 🤙 / 10"; score = 85 }
 
     return { detectedSign: detected, confidence: Math.round(score + Math.random() * 5) }
   }
