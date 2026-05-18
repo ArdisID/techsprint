@@ -605,10 +605,18 @@ export default function GestureDetection() {
               </div>
 
               <div className="space-y-3">
+                {/* Primary CTA: Quiz untuk modul yang baru selesai */}
+                <button
+                  onClick={() => { stopCameraRaw(); navigate(`/quiz?module=${activeModule}`) }}
+                  className="w-full py-3.5 bg-gradient-to-r from-violet-500 to-primary-500 hover:from-violet-600 hover:to-primary-600 text-white font-black rounded-2xl transition-all shadow-[0_4px_24px_rgba(99,102,241,0.4)] flex items-center justify-center gap-2 text-base"
+                >
+                  📝 Kerjakan Quiz Modul Ini
+                </button>
+
                 {activeModule < MODULES.length - 1 && (
                   <button
                     onClick={() => { setShowModuleComplete(false); switchModule(activeModule + 1) }}
-                    className="w-full py-3.5 bg-primary-500 hover:bg-primary-600 text-white font-black rounded-2xl transition-all shadow-[0_4px_20px_rgba(88,204,2,0.3)] flex items-center justify-center gap-2"
+                    className="w-full py-3.5 bg-primary-500 hover:bg-primary-600 text-white font-bold rounded-2xl transition-all shadow-[0_4px_20px_rgba(88,204,2,0.3)] flex items-center justify-center gap-2"
                   >
                     <ChevronRight className="w-5 h-5" />
                     Modul Berikutnya: {MODULES[activeModule + 1].emoji} {MODULES[activeModule + 1].label}
@@ -616,7 +624,7 @@ export default function GestureDetection() {
                 )}
                 <button
                   onClick={handleExit}
-                  className="w-full py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-2xl transition-all border border-white/5"
+                  className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-400 font-medium rounded-2xl transition-all border border-white/5"
                 >
                   Kembali ke Dashboard
                 </button>

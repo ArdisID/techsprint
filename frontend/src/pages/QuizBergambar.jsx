@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Icon } from '@iconify/react'
 import { useAuth } from '../context/AuthContext'
 
@@ -96,7 +96,17 @@ function HandSVGMini({ fingers, size = 56 }) {
 export default function QuizBergambar() {
   const { user } = useAuth()
   const navigate = useNavigate()
-  const [activeModule, setActiveModule] = useState(0)
+  const [searchParams] = useSearchParams()
+
+  // Baca ?module= dari URL — supaya quiz langsung buka modul yang sesuai materi
+  const initialModule = (() => {
+    const m = parseInt(searchParams.get('module') ?? '-1')
+    // searchParams 'module' menggunakan 0-based index sama seperti GestureDetection
+    // QUIZ_MODULES juga 0-based, tapi kita perlu memastikan indeksnya cocok
+    return m >= 0 && m < QUIZ_MODULES.length ? m : 0
+  })()
+
+  const [activeModule, setActiveModule] = useState(initialModule)
   const [qIndex, setQIndex] = useState(0)
   const [selected, setSelected] = useState(null)
   const [showResult, setShowResult] = useState(false)
@@ -147,13 +157,24 @@ export default function QuizBergambar() {
   const finalScore = score + (selected === q?.correct && showResult ? 0 : 0)
   const pct = Math.round((score / (total * 10)) * 100)
 
+  // Perlu dideklarasi sebelum 'finished' return agar bisa dipakai
+  const fromMaterialResult = searchParams.get('module') !== null
+
   if (finished) return (
     <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-6 font-sans">
       <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
         className="bg-white rounded-[2.5rem] shadow-xl p-10 max-w-md w-full text-center border border-slate-100">
         <div className="text-7xl mb-4">{pct >= 80 ? '🏆' : pct >= 60 ? '😊' : '📚'}</div>
         <h2 className="text-3xl font-black text-slate-900 mb-1">Kuis Selesai!</h2>
-        <p className="text-slate-500 mb-6">{mod.emoji} {mod.title}</p>
+        <p className="text-slate-500 mb-2">{mod.emoji} {mod.title}</p>
+
+        {/* Pesan kontekstual */}
+        {fromMaterialResult && (
+          <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold mb-6 ${pct >= 80 ? 'bg-green-50 text-green-700 border border-green-200' : pct >= 60 ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-red-50 text-red-600 border border-red-200'}`}>
+            {pct >= 80 ? '✅ Materi dikuasai dengan baik!' : pct >= 60 ? '📖 Hampir! Coba ulangi materinya.' : '🔁 Pelajari materinya lagi ya.'}
+          </div>
+        )}
+
         <div className="grid grid-cols-3 gap-3 mb-8">
           {[
             { label: 'Skor', val: score, color: 'text-primary-600', bg: 'bg-primary-50' },
@@ -175,9 +196,15 @@ export default function QuizBergambar() {
             className="w-full py-3.5 bg-primary-500 hover:bg-primary-600 text-white font-black rounded-2xl text-sm">
             🔄 Ulangi Kuis
           </button>
+          {fromMaterialResult && (
+            <button onClick={() => navigate(`/gesture?module=${initialModule}`)}
+              className="w-full py-3 bg-violet-50 hover:bg-violet-100 text-violet-700 font-bold rounded-2xl text-sm border border-violet-200">
+              📹 Ulangi Latihan Materi
+            </button>
+          )}
           <button onClick={() => navigate('/learn')}
             className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl text-sm">
-            Kembali ke Katalog
+            {fromMaterialResult ? 'Pelajari Modul Lain' : 'Kembali ke Katalog'}
           </button>
         </div>
       </motion.div>
@@ -188,9 +215,21 @@ export default function QuizBergambar() {
     <div className="min-h-screen bg-[#F8FAFC] font-sans">
       {/* Header */}
       <div className="sticky top-0 z-20 bg-white/80 backdrop-blur-xl border-b border-slate-200/60 px-6 py-3 flex items-center justify-between">
-        <Link to="/learn" className="flex items-center gap-2 text-slate-500 hover:text-primary-500 transition-colors font-bold text-sm">
-          <Icon icon="solar:arrow-left-bold" width={16} /> Katalog
-        </Link>
+        <button
+          onClick={() => navigate(fromMaterialResult ? `/gesture?module=${initialModule}` : '/learn')}
+          className="flex items-center gap-2 text-slate-500 hover:text-primary-500 transition-colors font-bold text-sm"
+        >
+          <Icon icon="solar:arrow-left-bold" width={16} />
+          {fromMaterialResult ? 'Kembali ke Materi' : 'Katalog'}
+        </button>
+
+        {/* Konteks: quiz ini untuk modul apa */}
+        {fromMaterialResult && (
+          <div className="flex items-center gap-2 bg-violet-50 border border-violet-200 px-4 py-1.5 rounded-full">
+            <span className="text-lg">{mod.emoji}</span>
+            <span className="text-xs font-bold text-violet-700">Quiz {mod.title}</span>
+          </div>
+        )}
         <div className="flex items-center gap-3">
           <Icon icon="solar:star-bold-duotone" width={18} color="#f59e0b" />
           <span className="font-black text-slate-900">{score} XP</span>
